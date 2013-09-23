@@ -1,0 +1,19 @@
+"FTPClientLib" is a library which purpose is to offer an easy and quick access to ftp communication with a remote server.
+
+Our support begin from API level 11 to ...
+
+#todo (by priority and possibility)#
+* Add more API supported 
+	(todo: tests)
+* improve ease of use
+* add more commands
+* add events kind
+
+#Changelog#
+v0.5: GPL licensing for GitHub and initial commit.
+v0.4: event handling back for end of operation
+v0.3: get and put commands added
+v0.2: commands for getting remote informations.
+v0.1: initial Library design for generic ftp communication (test).
+
+Everything is under copyright 2013 by Meï-Garino Jérémy.
