@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -39,7 +40,6 @@ import android.os.PowerManager.WakeLock;
  * FTPBundle operations. Will send an event for each operation (FTPBundle) done
  * with the result in it. The Event result will always be on the UI Thread.
  * Force the device to stay on during the command processing, mainly because of connection drop in sleeping cases...
- * todo in newt version: maybe add a timeout feature? :)
  * @author Jeremy.Mei-Garino
  * 
  */
@@ -47,6 +47,11 @@ public class FTPOperation extends AsyncTask<FTPBundle, FTPBundle, Boolean> {
 
 	private Context ctx;
 	private FTPOperationResult resultListener;
+    /**
+     * Set the timeOut for the connection to the ftp server.
+     * <br/>Default value is: <b>30sec</b>
+     */
+    private int _timeOut=30;
 /**
  * set the listener of the results of operations.
  * @param listener 
@@ -66,11 +71,17 @@ public class FTPOperation extends AsyncTask<FTPBundle, FTPBundle, Boolean> {
 		ctx = c;
 	}
 
-	public FTPOperation(Context c, FTPOperationResult list) {
-		super();
-		resultListener = list;
-		ctx = c;
-	}
+    public FTPOperation(Context c, FTPOperationResult list) {
+        super();
+        resultListener = list;
+        ctx = c;
+    }
+    public FTPOperation(Context c, FTPOperationResult list,int timeOut) {
+        super();
+        resultListener = list;
+        ctx = c;
+        _timeOut=timeOut;
+    }
 /**
  * will force keep the device turned on for all the operation duration.
  * @param params
@@ -80,7 +91,7 @@ public class FTPOperation extends AsyncTask<FTPBundle, FTPBundle, Boolean> {
 	@Override
 	protected Boolean doInBackground(FTPBundle... params) {
 		Thread.currentThread().setName("FTPOperationWorker");
-		for (FTPBundle bundle : params) {
+		for (final FTPBundle bundle : params) {
 
 			FTPClient ftp = new FTPClient();
 			PowerManager pw = (PowerManager) ctx
@@ -90,11 +101,20 @@ public class FTPOperation extends AsyncTask<FTPBundle, FTPBundle, Boolean> {
 			try {
 				// setup ftp connection:
 				InetAddress addr = InetAddress.getByName(bundle.FTPServerHost);
-
-				ftp.connect(addr, bundle.FTPServerPort);
+                //set here the timeout.
+                TimeoutThread timeout=new TimeoutThread(_timeOut,new FTPTimeout() {
+                    @Override
+                    public void Occurred(TimeoutException e) {
+                        bundle.Exception=e;
+                        bundle.OperationStatus=FTPOperationStatus.Failed;
+                        publishProgress(bundle);
+                    }
+                });timeout.start();
+                ftp.connect(addr, bundle.FTPServerPort);
 				int reply = ftp.getReplyCode();
+                timeout.Stop();
 				if (!FTPReply.isPositiveCompletion(reply)) {
-					throw new IOException("connection refus�e");
+					throw new IOException("connection refusée");
 				}
 				ftp.login(bundle.FTPCredentialUsername,
 						bundle.FTPCredentialPassword);
@@ -164,7 +184,7 @@ public class FTPOperation extends AsyncTask<FTPBundle, FTPBundle, Boolean> {
 				// then finish/return.
 				//publishProgress(bundle);
 			} catch (IOException e) {
-				e.printStackTrace();
+				e.printStackTrace();bundle.Exception=e;
 				bundle.OperationStatus = FTPOperationStatus.Failed;
 			}
 			try {

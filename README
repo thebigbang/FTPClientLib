@@ -9,11 +9,13 @@ Our support begin from API level 11 to ...
 * add more commands
 * add events kind
 
+note: no tests performed on v0.6... if you find any bug please contact me or pull an issue request on GitHub ;).
 #Changelog#
+v0.6: Added timeout feature, with new event and a separate independent thread for timeout management. Added a new Exception object in bundle to get the precise exception thrown.
 v0.5: GPL licensing for GitHub and initial commit.
 v0.4: event handling back for end of operation
 v0.3: get and put commands added
-v0.2: commands for getting remote informations.
+v0.2: commands for getting remote information.
 v0.1: initial Library design for generic ftp communication (test).
 
-Everything is under copyright 2013 by Meï-Garino Jérémy.
+Everything is under copyright 2013 by MeÃ¯-Garino JÃ©rÃ©my.

@@ -116,6 +116,11 @@ public class FTPBundle {
 	/**
 	 * Retrieve the operation status of the Current Bundle.
 	 * Default is Pending.
+     * <br/> In Case of Fail see {@link #Exception}
 	 */
 	public FTPOperationStatus OperationStatus=FTPOperationStatus.Pending;
+    /**
+     * should not be null in case an exception occurred.
+     */
+    public Exception Exception;
 }
